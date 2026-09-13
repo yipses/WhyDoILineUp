@@ -45,11 +45,14 @@ npm run content:build  # regenerate content/*.csv from scripts/build_content.py 
 ## Content and tuning
 
 Everything the game says and every number it uses lives in `content/*.csv`, one
-file per tab of the Google Sheet **The Line — Content & Tuning**. The sheet is
-the source of truth. To take changes live:
+file per tab of the Google Sheet **The Line — Content & Tuning**. The `Quests`
+tab is large, so it was uploaded as its own sheet, **The Line — Quests**. The
+sheets are the source of truth. To take changes live:
 
-1. Share the sheet as "Anyone with the link can view".
-2. `SHEET_ID=<id from the sheet URL> npm run content:pull` (or put the id in `content/SHEET_ID`).
+1. Share both sheets as "Anyone with the link can view".
+2. `npm run content:pull`. The sheet ids are read from `content/SHEET_ID` and
+   `content/QUESTS_SHEET_ID` (or the `SHEET_ID` / `QUESTS_SHEET_ID` env vars).
+   If you copy the Quests tab into the main sheet, delete `content/QUESTS_SHEET_ID`.
 3. Restart the server.
 
 Tabs: `Tuning`, `XP_Curve`, `Quest_Tiers`, `Odds_Bands`, `Titles`, `Avatar_Parts`,

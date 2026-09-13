@@ -33,15 +33,18 @@ const TABS = [
   "Quests",
 ];
 
-const sheetId = process.env.SHEET_ID || readSheetIdFile();
+const sheetId = process.env.SHEET_ID || readIdFile("SHEET_ID");
+// The Quests tab may live in its own spreadsheet ("The Line — Quests").
+// If it has been copied into the main sheet, leave QUESTS_SHEET_ID unset.
+const questsSheetId = process.env.QUESTS_SHEET_ID || readIdFile("QUESTS_SHEET_ID") || sheetId;
 if (!sheetId) {
   console.error("Set SHEET_ID (or put the id in content/SHEET_ID) and share the sheet as 'anyone with the link can view'.");
   process.exit(1);
 }
 
-function readSheetIdFile() {
+function readIdFile(name) {
   try {
-    return fs.readFileSync(path.join(contentDir, "SHEET_ID"), "utf8").trim();
+    return fs.readFileSync(path.join(contentDir, name), "utf8").trim();
   } catch {
     return "";
   }
@@ -49,7 +52,8 @@ function readSheetIdFile() {
 
 let failed = 0;
 for (const tab of TABS) {
-  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
+  const id = tab === "Quests" ? questsSheetId : sheetId;
+  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
   try {
     const res = await fetch(url, { redirect: "follow" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
