@@ -1,0 +1,37 @@
+key,value,notes
+LINE_TICK_SECONDS,60,Seconds the front-of-liner has per interval. Also the line tick.
+FRONT_EXTENSIONS_MAX,2,LOCKED. 'More time' presses allowed at the front.
+EXIT_EMOJI_SECONDS,20,Seconds to pick an exit emoji after submitting before a default is used.
+LEAVE_GRACE_SECONDS,30,Seconds without a heartbeat before a disconnected player loses their spot.
+MESSAGE_MAX_CHARS,140,Max characters in a front-of-line message.
+MESSAGE_DELIVERY_WEIGHT,1.0,Draw weight = 1 / (1 + deliveries) ^ this. Higher = stronger bias to undelivered messages.
+SEED_RETIRE_THRESHOLD,200,Seeds stop being drawn once approved non-seed messages exceed this.
+MOD_PASS_THRESHOLD,0.7,Classifier score >= this: auto-approve.
+MOD_FAIL_THRESHOLD,0.3,Classifier score < this: auto-reject. Between the two: human review queue.
+MESSAGE_REPORT_THRESHOLD,3,Reports needed to pull a message into the review queue.
+XP_IDLE_PER_MINUTE,2,XP per full minute in line. Tuned low.
+STAT_BASE,1,"Starting value of CHARM, INTELLIGENCE, STRENGTH."
+QUEST_FIRST_DELAY_MINUTES,1,Minutes after joining before the first quest.
+QUEST_INTERVAL_MINUTES,4,Minutes between quests.
+QUEST_INTERVAL_JITTER_MINUTES,1,Plus/minus jitter on the quest interval.
+QUEST_TIMEOUT_SECONDS,180,Unanswered quests expire silently after this.
+QUEST_TIER_WEIGHT_BIAS,2.0,"Tier draw weight = tier ^ this, over unlocked tiers. Higher = more top-tier quests."
+QUEST_RECENT_MEMORY,8,Do not repeat any of the player's last N quests.
+ROLL_BASE,0.5,"ROLL_FORMULA: p = ROLL_BASE + (stat - difficulty) * ROLL_STEP, clamped."
+ROLL_STEP,0.08,Probability change per point of (stat - difficulty).
+ROLL_FLOOR,0.05,Minimum success probability.
+ROLL_CEILING,0.95,Maximum success probability.
+QUEST_XP_FAIL,5,Consolation XP for a failed check. Never zero.
+ANNOUNCE_LEVEL_MILESTONES,"5,10,15,20,25,30",Level-ups that NPCs announce in chat.
+ANNOUNCE_MIN_INTERVAL_SECONDS,90,Global minimum gap between NPC announcements. Missed events are dropped.
+NPC_AMBIENT_INTERVAL_SECONDS,45,Average gap between NPC ambient chat lines (only while humans are in line).
+NPC_AMBIENT_JITTER_SECONDS,30,Plus/minus jitter on the ambient interval.
+CHAT_HISTORY_LINES,50,Chat lines shown to a joining player.
+CHAT_MAX_CHARS,200,Max characters per chat message.
+CHAT_MOD_DELAY_SECONDS,2,Delay before a human chat line appears (real-time moderation window).
+CHAT_RATE_LIMIT_SECONDS,3,Minimum seconds between chat messages from one player.
+LEADERBOARD_RESET_DAY,Monday,Weekly board resets at 00:00 UTC on this day.
+LEADERBOARD_SIZE,100,Rows shown on each board.
+NAME_MAX_CHARS,20,Max characters in a display name.
+RECEIPT_SNAPSHOT_NAMES,10,How many names from the line appear on the text receipt.
+LINE_VIEW_NAMES,14,How many names around the player are rendered in the line view.

@@ -1,0 +1,89 @@
+# THE LINE
+
+People line up. The front of the line is never explained.
+
+This is the v1 build of the design doc: multiplayer, real-time, text only. A Node
+server owns the line, the message pool, quests, chat, NPCs, progression and the
+leaderboards. A browser client renders all of it as monospace text with
+keyboard-driven menus. No graphics anywhere.
+
+## Run it
+
+Requires Node 22.13 or newer (the database is Node's built-in SQLite).
+
+```sh
+npm install
+npm run build
+SECURE_COOKIES=0 npm start        # local dev over plain http
+```
+
+Open http://localhost:3000. Open it in a second browser (or a private window)
+to be a second person in line.
+
+### Environment
+
+| Variable            | Default                | What it does |
+| ------------------- | ---------------------- | ------------ |
+| `PORT`              | `3000`                 | HTTP port. |
+| `DB_PATH`           | `data/the-line.sqlite` | SQLite file. Created on first run. |
+| `SECURE_COOKIES`    | `1`                    | Set to `0` when serving over plain http (local dev). |
+| `TIME_SCALE`        | `1`                    | Divides every timed duration. `TIME_SCALE=20` makes the 60s tick take 3s. Playtesting only. |
+| `MOD_PASSWORD`      | unset                  | Enables the human review tool at `/mod` (basic auth, user `mod`). |
+| `ANTHROPIC_API_KEY` | unset                  | Turns on the AI moderation classifier. Without it a heuristic classifier runs. |
+| `MOD_MODEL`         | `claude-opus-5`        | Model used by the AI classifier. |
+| `SITE_URL`          | request origin         | Public URL placed in share text. |
+
+### Scripts
+
+```sh
+npm test            # engine tests with a fake clock (node --test)
+npm run smoke       # bots against a running server; use TIME_SCALE=20 on the server
+npm run content:pull   # pull every tab of the Google Sheet into content/*.csv
+npm run content:build  # regenerate content/*.csv from scripts/build_content.py (initial authoring only)
+```
+
+## Content and tuning
+
+Everything the game says and every number it uses lives in `content/*.csv`, one
+file per tab of the Google Sheet **The Line — Content & Tuning**. The sheet is
+the source of truth. To take changes live:
+
+1. Share the sheet as "Anyone with the link can view".
+2. `SHEET_ID=<id from the sheet URL> npm run content:pull` (or put the id in `content/SHEET_ID`).
+3. Restart the server.
+
+Tabs: `Tuning`, `XP_Curve`, `Quest_Tiers`, `Odds_Bands`, `Titles`, `Avatar_Parts`,
+`Emojis`, `NPCs`, `NPC_Lines`, `Announcements`, `Prompts`, `Seed_Messages`,
+`Blocklist`, `Quests`. The README tab in the sheet explains each column.
+
+The roll formula is `p = ROLL_BASE + (stat - difficulty) * ROLL_STEP`, clamped to
+`ROLL_FLOOR..ROLL_CEILING`. Players only ever see the qualitative band from
+`Odds_Bands`.
+
+## Layout
+
+```
+src/server/
+  index.ts       boot
+  config.ts      env + TIME_SCALE helpers
+  content.ts     CSV loader + typed content
+  db.ts          SQLite schema and queries
+  identity.ts    secret token / public id / cookies (Section 11)
+  moderation.ts  heuristic + optional Claude classifier, pass/fail/review
+  progression.ts xp curve, titles, rolls, text avatars, weekly keys
+  receipts.ts    the text receipt
+  game.ts        the line, front-of-line flow, quests, chat, NPCs, boards
+  server.ts      http + websocket transport, /mod
+  mod.ts         human review queue page
+src/test/        engine tests
+public/          text client (index.html, app.js, style.css)
+content/         CSV mirror of the Google Sheet
+scripts/         content build/pull, smoke bots
+```
+
+## What v1 deliberately leaves out
+
+Let-through (removed from the design), image generation and platform share
+sheets (the receipt is text; sharing is copy / X intent link / mailto), account
+sign-in, coins, prestige, and every parking-lot item. The AI classifier is
+optional and off by default.

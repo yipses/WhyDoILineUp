@@ -1,0 +1,11 @@
+npc_id,event,text
+regular,long_shot,Did everyone see that? {name} just pulled that off. I've been here years and I've never seen that.
+streamer,long_shot,CHAT. {name} just did the thing. Clip it. Somebody clip it. Nobody's here. Clip it anyway.
+placeholder,long_shot,{name} just did something incredible and I'm going to tell my friend about it when they get here.
+vendor,long_shot,{name}. Long shot. Paid off. I'd sell that if I could.
+auditor,long_shot,Noting for the record: {name} just beat the odds. Documented.
+regular,level_milestone,{name} hit level {level}. That's a lot of standing. Respect.
+streamer,level_milestone,"Chat, {name} is level {level} now. Level {level}! We're all so proud. Chat? We're proud."
+placeholder,level_milestone,{name}'s level {level}. I'd be that level too if I ever moved from this spot.
+vendor,level_milestone,Level {level} for {name}. No discount. But well done.
+auditor,level_milestone,{name}: level {level}. Verified. Congratulations. Filed.

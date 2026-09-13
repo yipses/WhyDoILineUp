@@ -1,0 +1,6 @@
+npc_id,name,description,stat_lean
+regular,The Regular,has been here since a product launch nobody remembers,"STRENGTH,INTELLIGENCE"
+streamer,The Streamer,broadcasting the line to zero viewers,"CHARM,STRENGTH"
+placeholder,The Placeholder,holding a spot for a friend who is obviously not coming,"CHARM,INTELLIGENCE"
+vendor,The Vendor,"sells one item, changes daily, never has change","INTELLIGENCE,STRENGTH"
+auditor,The Auditor,"convinced they are in the wrong line, needs help proving it","INTELLIGENCE,CHARM"

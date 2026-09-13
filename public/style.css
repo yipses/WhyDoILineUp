@@ -1,0 +1,154 @@
+:root {
+  --bg: #0b0d10;
+  --panel: #101318;
+  --fg: #d8dcd6;
+  --dim: #7a8088;
+  --bright: #ffffff;
+  --accent: #f2c14e;
+  --npc: #8fd3ff;
+  --announce: #b5f28f;
+  --danger: #ff7a7a;
+  --border: #c9ccc4;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+#screen {
+  max-width: 96ch;
+  margin: 0 auto;
+  padding: 12px 16px 24px;
+  display: flex;
+  flex-direction: column;
+}
+#header { order: -3; }
+#street { order: -2; }
+/* On the landing page the name box comes before the menu. */
+body.landing #dialog { order: -1; }
+
+pre {
+  margin: 0;
+  font: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 0 6px;
+  border-bottom: 2px double var(--border);
+  white-space: pre;
+  overflow: hidden;
+}
+
+#street { padding: 8px 0 4px; min-height: 5.5em; }
+#lineview { color: var(--bright); }
+#peek, #toast { min-height: 1.35em; }
+.dim { color: var(--dim); }
+
+#main {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+  align-items: stretch;
+}
+#left { flex: 1 1 60%; min-width: 0; }
+#right { flex: 0 0 32ch; }
+
+.box {
+  border: 3px double var(--border);
+  background: var(--panel);
+  padding: 6px 10px 8px;
+  margin-bottom: 12px;
+  position: relative;
+}
+.box-title {
+  display: inline-block;
+  position: relative;
+  top: -1.05em;
+  margin-bottom: -1em;
+  background: var(--panel);
+  padding: 0 6px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+
+#chatlog {
+  height: 16em;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.inputrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  border-top: 1px dashed #3a3f46;
+  padding-top: 6px;
+}
+.prompt { color: var(--accent); }
+input, textarea {
+  flex: 1;
+  background: transparent;
+  color: var(--bright);
+  border: none;
+  outline: none;
+  font: inherit;
+  padding: 2px 0;
+  caret-color: var(--accent);
+}
+textarea { resize: none; width: 100%; min-height: 4.2em; }
+.inputrow:has(textarea) { align-items: flex-start; }
+input::placeholder, textarea::placeholder { color: #4d545c; }
+
+.menuitem, .clicky { cursor: pointer; }
+.menuitem.selected { color: var(--bright); }
+.menuitem.disabled { color: var(--dim); cursor: default; }
+.cursor { color: var(--accent); }
+.k { color: var(--accent); }
+.dimmer { color: var(--dim); }
+.name { color: var(--bright); }
+.you { color: var(--accent); }
+.npc { color: var(--npc); }
+.announce { color: var(--announce); }
+.system { color: var(--dim); font-style: italic; }
+.danger { color: var(--danger); }
+.ok { color: var(--announce); }
+.wrap { white-space: pre-wrap; }
+
+#dialog .box { margin-top: 0; }
+#overlay:empty { display: none; }
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 6, 8, 0.85);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px;
+  overflow-y: auto;
+}
+#overlay .box { width: min(80ch, 100%); }
+
+.blink { animation: blink 1s steps(2, start) infinite; }
+@keyframes blink { to { visibility: hidden; } }
+
+.receipt { color: var(--bright); }
+
+@media (max-width: 720px) {
+  #main { flex-direction: column; }
+  #right { flex: 1 1 auto; }
+  #chatlog { height: 12em; }
+  .bar { white-space: normal; flex-wrap: wrap; }
+}

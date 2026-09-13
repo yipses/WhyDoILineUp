@@ -1,0 +1,28 @@
+{
+  "name": "the-line",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The Line. People line up. The front of the line is never explained.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node --no-warnings=ExperimentalWarning dist/server/index.js",
+    "dev": "npm run build && npm start",
+    "content:pull": "node scripts/pull-content.mjs",
+    "content:build": "python3 scripts/build_content.py --no-xlsx",
+    "test": "npm run build && node --no-warnings=ExperimentalWarning --test dist/test/",
+    "smoke": "node --no-warnings=ExperimentalWarning scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
+    "ws": "^8.21.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.9.3"
+  }
+}

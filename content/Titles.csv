@@ -1,0 +1,14 @@
+stat,min_level,title,accessory
+NONE,1,Person in Line,
+CHARM,1,Local Sweetheart,sunglasses
+CHARM,5,Everyone's Cousin,a very good haircut
+CHARM,12,Neighbourhood Fixture,a scarf that people comment on
+CHARM,20,Mayor of This Block,"a sash, worn ironically, but not really"
+INTELLIGENCE,1,Reads the Signs,a clipboard
+INTELLIGENCE,5,Knows a Guy,reading glasses pushed up
+INTELLIGENCE,12,Has a Spreadsheet,a laminated map
+INTELLIGENCE,20,Line Theorist,three pens in one pocket
+STRENGTH,1,Can Stand a While,a thermos
+STRENGTH,5,Brought a Chair,a folding chair under one arm
+STRENGTH,12,Load-Bearing,"a cooler, carried, never opened"
+STRENGTH,20,Immovable Object,a whole camping setup

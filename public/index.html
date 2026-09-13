@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THE LINE</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="screen">
+  <div id="header" class="bar"></div>
+  <div id="street">
+    <pre id="lineview"></pre>
+    <div id="peek" class="dim"></div>
+    <div id="toast" class="dim"></div>
+  </div>
+  <div id="main">
+    <div id="left">
+      <div id="chatbox" class="box">
+        <div class="box-title">CHAT</div>
+        <pre id="chatlog"></pre>
+        <div id="chatinput" class="inputrow"><span class="prompt">&gt;</span><input id="chatfield" type="text" maxlength="200" autocomplete="off" spellcheck="false" placeholder="say something"></div>
+      </div>
+    </div>
+    <div id="right">
+      <div id="menubox" class="box">
+        <div class="box-title">MENU</div>
+        <pre id="menu"></pre>
+      </div>
+    </div>
+  </div>
+  <div id="dialog"></div>
+  <div id="overlay"></div>
+  <div id="status" class="dim"></div>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>

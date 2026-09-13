@@ -1,0 +1,6 @@
+label,min_probability
+Long shot,0.0
+Risky,0.2
+Even,0.4
+Likely,0.6
+Sure thing,0.8
