@@ -31,6 +31,7 @@ TUNING = [
     ("MOD_FAIL_THRESHOLD", 0.3, "Classifier score < this: auto-reject. Between the two: human review queue."),
     ("MESSAGE_REPORT_THRESHOLD", 3, "Reports needed to pull a message into the review queue."),
     ("XP_IDLE_PER_MINUTE", 2, "XP per full minute in line. Tuned low."),
+    ("XP_FRONT_BONUS", 50, "XP granted the moment a player reaches the front. The hurrah."),
     ("STAT_BASE", 1, "Starting value of CHARM, INTELLIGENCE, STRENGTH."),
     ("QUEST_FIRST_DELAY_MINUTES", 1, "Minutes after joining before the first quest."),
     ("QUEST_INTERVAL_MINUTES", 4, "Minutes between quests."),

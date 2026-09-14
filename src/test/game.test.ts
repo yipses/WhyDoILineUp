@@ -95,7 +95,7 @@ test("receipt has exactly the three required facts", () => {
 });
 
 test("join, front, submit, emoji, receipt", async () => {
-  const { game, clock, events, db, mk } = setup();
+  const { game, clock, events, db, mk, content } = setup();
   const a = mk(1);
   const b = mk(2);
   await game.join(a, "Mara");
@@ -104,6 +104,12 @@ test("join, front, submit, emoji, receipt", async () => {
   assert.equal(va.me.phase, "front");
   assert.equal(va.me.position, 1);
   assert.ok(va.me.front?.messageText, "front player gets a message");
+  assert.equal(va.me.front!.bonusXp, 50, "front bonus reported to the client");
+  assert.equal(va.me.xp, 50, "front bonus granted on arrival");
+  assert.equal(va.me.level, 2, "50 xp is exactly level 2");
+  assert.equal(va.me.xpLevelStart, content.xpCurve[1]);
+  assert.equal(va.me.xpLevelEnd, content.xpCurve[2]);
+  assert.equal(game.view(b).me.xp, 0, "no bonus for waiting behind");
   assert.equal(game.view(b).me.position, 2);
   assert.equal(db.receiptsFor(a).length, 1, "receipt generated on reaching the front");
 

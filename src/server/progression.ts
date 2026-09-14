@@ -30,6 +30,12 @@ export function levelCap(curve: number[]): number {
   return curve.length;
 }
 
+/** Cumulative XP where the current level starts and where the next begins (null at cap). */
+export function levelBounds(xp: number, curve: number[]): { start: number; end: number | null } {
+  const level = levelForXp(xp, curve);
+  return { start: curve[level - 1] ?? 0, end: level >= curve.length ? null : curve[level] };
+}
+
 /** XP still needed for the next level, or null at cap. */
 export function xpToNext(xp: number, curve: number[]): number | null {
   const level = levelForXp(xp, curve);

@@ -332,6 +332,18 @@
     return items;
   }
 
+  /** "LVL 3 [#######.......] 120/250" with progress through the current level. */
+  function xpBar(m, width) {
+    const w = width || 16;
+    if (m.xpLevelEnd === null) {
+      return `<span class="k">LVL MAX</span> [${"#".repeat(w)}] ${m.xp} XP`;
+    }
+    const span = Math.max(1, m.xpLevelEnd - m.xpLevelStart);
+    const into = Math.max(0, m.xp - m.xpLevelStart);
+    const filled = Math.max(0, Math.min(w, Math.floor((into / span) * w)));
+    return `<span class="k">LVL ${m.level}</span> [${"#".repeat(filled)}${".".repeat(w - filled)}] ${into}/${span} <span class="dim">to LVL ${m.level + 1}</span>`;
+  }
+
   function renderMenuList(items, index, focused, prefix) {
     return items
       .map((it, i) => {
@@ -351,7 +363,9 @@
     let html = renderMenuList(items, S.menuIndex, S.focus === "menu", "menu");
     if (S.view) {
       const m = S.view.me;
-      html += `\n\n<span class="dim">${esc(m.name || "(no name yet)")} · LVL ${m.level >= m.levelCap ? "MAX" : m.level} · ${esc(m.title)}</span>`;
+      html += `\n\n<span class="dim">${esc(m.name || "(no name yet)")} · ${esc(m.title)}</span>`;
+      html += `\n${xpBar(m)}`;
+      html += `\n<span class="dim">CHA</span> ${m.stats.CHARM}  <span class="dim">INT</span> ${m.stats.INTELLIGENCE}  <span class="dim">STR</span> ${m.stats.STRENGTH}`;
     }
     if (S.errorText && Date.now() < S.errorUntil) html += `\n<span class="danger">${esc(S.errorText)}</span>`;
     el.menu.innerHTML = html;
@@ -407,9 +421,10 @@
       const msg = f.messageText
         ? `<pre class="wrap">Someone who stood here before you left this:\n\n  <span class="name">"${esc(f.messageText)}"</span></pre>`
         : `<pre class="wrap">Nobody left anything for you. That happens.</pre>`;
+      const hurrah = f.bonusXp > 0 ? `<pre class="ok">You made it. +${f.bonusXp} XP.\n</pre>` : "";
       html = box(
         `YOU'RE AT THE FRONT  ·  ${left}`,
-        `${msg}
+        `${hurrah}${msg}
 <pre class="wrap">\n\nLeave one for whoever's next.${f.prompt ? `\n<span class="dim">${esc(f.prompt)}</span>` : ""}</pre>
 <div class="inputrow"><span class="prompt">&gt;</span><textarea id="msgfield" maxlength="${f.maxChars}" placeholder="up to ${f.maxChars} characters" spellcheck="true"></textarea></div>
 <pre class="dim" id="msgcount" style="text-align:right">0/${f.maxChars}</pre>
@@ -550,14 +565,13 @@ ${S.errorText && Date.now() < S.errorUntil ? `<pre class="danger">${esc(S.errorT
     if (o.kind === "status") {
       const m = v.me;
       const cap = Math.max(10, m.levelCap);
-      const xpLine = m.xpToNext === null ? "XP     " + m.xp + "  (at cap)" : `XP     ${m.xp}  (${m.xpToNext} to next)`;
       html = box(
         "STATUS",
         `<pre class="wrap"><span class="name">${esc(m.name || "(no name yet)")}</span>
 ${esc(m.avatarText)}
 
-LVL    ${m.level >= m.levelCap ? "MAX" : m.level}
-${xpLine}
+${xpBar(m, 24)}
+XP     ${m.xp} total
 TITLE  ${esc(m.title)}${m.accessory ? `  <span class="dim">(${esc(m.accessory)})</span>` : ""}
 
 CHARM         ${statBar(m.stats.CHARM, cap)} ${m.stats.CHARM}

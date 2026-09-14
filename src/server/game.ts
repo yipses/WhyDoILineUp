@@ -6,6 +6,7 @@ import { buildClassifier, decide, type Classifier } from "./moderation.js";
 import {
   avatarSignature,
   describeAvatar,
+  levelBounds,
   levelCap,
   levelForXp,
   oddsBand,
@@ -84,6 +85,9 @@ export interface MeView {
   levelCap: number;
   xp: number;
   xpToNext: number | null;
+  /** Cumulative XP where this level started and where the next begins (null at cap). */
+  xpLevelStart: number;
+  xpLevelEnd: number | null;
   stats: { CHARM: number; INTELLIGENCE: number; STRENGTH: number };
   pendingPoints: number;
   title: string;
@@ -104,6 +108,8 @@ export interface MeView {
     maxChars: number;
     reported: boolean;
     canReport: boolean;
+    /** XP granted for making it to the front. */
+    bonusXp: number;
   } | null;
   exiting: { deadline: number; emojis: { emoji: string; ascii: string; label: string }[] } | null;
 }
@@ -168,6 +174,7 @@ interface FrontState {
   prompt: string;
   receiptId: number;
   reported: boolean;
+  bonusXp: number;
 }
 
 interface ExitState {
@@ -345,6 +352,8 @@ export class Game {
       levelCap: levelCap(this.content.xpCurve),
       xp: p.xp,
       xpToNext: xpToNext(p.xp, this.content.xpCurve),
+      xpLevelStart: levelBounds(p.xp, this.content.xpCurve).start,
+      xpLevelEnd: levelBounds(p.xp, this.content.xpCurve).end,
       stats: statsOf(p),
       pendingPoints: p.pending_points,
       title: t.title,
@@ -376,6 +385,7 @@ export class Game {
             maxChars: this.tuning.num("MESSAGE_MAX_CHARS", 140),
             reported: entry.front.reported,
             canReport: entry.front.messageId !== null,
+            bonusXp: entry.front.bonusXp,
           }
         : null,
       exiting: exit ? { deadline: exit.deadline, emojis: this.content.emojis } : null,
@@ -490,6 +500,8 @@ export class Game {
     const prompts = this.content.prompts;
     const prompt = prompts.length ? prompts[this.promptIdx++ % prompts.length] : "";
 
+    // Making it to the front is worth something on its own.
+    const bonusXp = Math.max(0, this.tuning.num("XP_FRONT_BONUS", 50));
     first.front = {
       enteredAt: now,
       deadline: now + tick,
@@ -499,7 +511,9 @@ export class Game {
       prompt,
       receiptId,
       reported: false,
+      bonusXp,
     };
+    if (bonusXp > 0) this.grantXp(p.id, bonusXp, now);
     this.listener?.onPlayer(p.id);
   }
 
