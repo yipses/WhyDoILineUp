@@ -89,7 +89,6 @@ export interface MeView {
   xpLevelStart: number;
   xpLevelEnd: number | null;
   stats: { CHARM: number; INTELLIGENCE: number; STRENGTH: number };
-  pendingPoints: number;
   title: string;
   accessory: string;
   lifetimeSeconds: number;
@@ -140,6 +139,8 @@ export interface Listener {
   onToast(text: string): void;
   onFinished(playerId: number, payload: { receipt: ReceiptView; timedOut: boolean }): void;
   onError(playerId: number, text: string): void;
+  /** A private good-news line for one player (level up, stat raised). */
+  onNotice(playerId: number, text: string): void;
 }
 
 // ---------------------------------------------------------------------------
@@ -355,7 +356,6 @@ export class Game {
       xpLevelStart: levelBounds(p.xp, this.content.xpCurve).start,
       xpLevelEnd: levelBounds(p.xp, this.content.xpCurve).end,
       stats: statsOf(p),
-      pendingPoints: p.pending_points,
       title: t.title,
       accessory: t.accessory,
       lifetimeSeconds: p.lifetime_seconds,
@@ -643,18 +643,38 @@ export class Game {
     this.db.updatePlayer(playerId, {
       xp,
       level: Math.max(p.level, newLevel),
-      pending_points: p.pending_points + gained,
       lifetime_seconds: p.lifetime_seconds + seconds,
       week_key: wk,
       week_xp: weekXp,
       week_seconds: weekSeconds,
     });
     if (gained > 0) {
+      // Each level raises the stat the player leaned on most in quests since
+      // the last level-up. Ties (including no quests at all) are random.
+      const usage = this.db.statUsageSince(playerId, p.last_levelup_at);
+      for (let l = p.level + 1; l <= newLevel; l++) {
+        const { stat, tie } = this.pickStatToRaise(usage);
+        const fresh = this.db.getPlayer(playerId)!;
+        const col = statColumn(stat);
+        this.db.updatePlayer(playerId, { [col]: fresh[col] + 1, last_raised: stat, last_levelup_at: now } as Partial<PlayerRow>);
+        const why = tie ? "Nothing stood out, so" : `You leaned on ${stat}, so`;
+        this.listener?.onNotice(playerId, `LEVEL ${l}. ${why} ${stat} +1.`);
+      }
       const milestones = this.tuning.list("ANNOUNCE_LEVEL_MILESTONES", [5, 10, 15, 20, 25, 30]);
       for (let l = p.level + 1; l <= newLevel; l++) {
         if (milestones.includes(l)) this.announce("level_milestone", { name: p.name, level: String(l) }, now);
       }
+      this.listener?.onPlayer(playerId);
+      if (this.entryFor(playerId)) this.listener?.onLine();
     }
+  }
+
+  private pickStatToRaise(usage: Record<string, number>): { stat: Stat; tie: boolean } {
+    const all: Stat[] = ["CHARM", "INTELLIGENCE", "STRENGTH"];
+    const max = Math.max(0, ...all.map((s) => usage[s] ?? 0));
+    const leaders = max > 0 ? all.filter((s) => (usage[s] ?? 0) === max) : all;
+    const stat = leaders[Math.floor(Math.random() * leaders.length)];
+    return { stat, tie: leaders.length > 1 };
   }
 
   private creditIdle(entry: LineEntry, now: number, flush: boolean) {
@@ -672,21 +692,6 @@ export class Game {
       entry.lastIdleCreditAt = now;
       if (remainderSeconds > 0) this.grantXp(entry.playerId, 0, now, remainderSeconds);
     }
-  }
-
-  levelUp(playerId: number, stat: string) {
-    const p = this.db.getPlayer(playerId);
-    if (!p) return;
-    const s = stat.toUpperCase() as Stat;
-    if (!["CHARM", "INTELLIGENCE", "STRENGTH"].includes(s)) return;
-    if (p.pending_points <= 0) {
-      this.listener?.onError(playerId, "No stat points to spend.");
-      return;
-    }
-    const col = statColumn(s);
-    this.db.updatePlayer(playerId, { [col]: p[col] + 1, pending_points: p.pending_points - 1, last_raised: s } as Partial<PlayerRow>);
-    this.listener?.onPlayer(playerId);
-    this.listener?.onLine();
   }
 
   reroll(playerId: number) {
@@ -789,7 +794,7 @@ export class Game {
       text: success ? opt.success : opt.failure,
       xp,
     };
-    this.db.logQuest({ playerId, questId: pending.quest.id, option, success, probability: p, xp, now });
+    this.db.logQuest({ playerId, questId: pending.quest.id, option, stat: opt.stat, success, probability: p, xp, now });
     const player = this.db.getPlayer(playerId);
     this.grantXp(playerId, xp, now);
     if (success && band === this.content.oddsBands[0]?.label && player) {

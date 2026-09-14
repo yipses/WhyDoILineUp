@@ -20,6 +20,7 @@ function setup(tuningOverrides: Record<string, string> = {}) {
     chat: [] as ChatLine[],
     toasts: [] as string[],
     errors: [] as { playerId: number; text: string }[],
+    notices: [] as { playerId: number; text: string }[],
     lineChanges: 0,
   };
   const listener: Listener = {
@@ -38,6 +39,9 @@ function setup(tuningOverrides: Record<string, string> = {}) {
     },
     onError(playerId, text) {
       events.errors.push({ playerId, text });
+    },
+    onNotice(playerId, text) {
+      events.notices.push({ playerId, text });
     },
   };
   game.setListener(listener);
@@ -188,7 +192,7 @@ test("leaving the site loses the spot after the grace period; rejoin goes to the
 
 test("idle xp, quests, level up, stat choice, titles", async () => {
   // A very long tick keeps a at the front so b stays second for the whole test.
-  const { game, clock, events, db, mk } = setup({ LINE_TICK_SECONDS: "100000" });
+  const { game, clock, events, db, mk, content } = setup({ LINE_TICK_SECONDS: "100000" });
   const a = mk(1);
   const b = mk(2);
   await game.join(a, "Mara");
@@ -230,19 +234,30 @@ test("idle xp, quests, level up, stat choice, titles", async () => {
   game.tick(clock.now());
   assert.equal(game.view(b).me.quest, null);
 
-  // Force a level-up through xp and spend the point.
+  // Level-ups raise the stat used most in quests since the last level-up.
+  // b has answered one quest so far (option a of the second quest); seed the
+  // log with two more CHARM answers so CHARM is the clear leader.
+  const questStat = db.recentQuestIds(b, 1).length ? (db.sql.prepare("SELECT stat FROM quest_log WHERE player_id = ? ORDER BY id DESC LIMIT 1").get(b) as { stat: string }).stat : "";
+  const lean = questStat === "CHARM" ? "INTELLIGENCE" : "CHARM";
+  for (let i = 0; i < 3; i++) db.logQuest({ playerId: b, questId: "x", option: "a", stat: lean, success: true, probability: 0.5, xp: 1, now: clock.now() });
+  assert.equal(vb.me.title, "Person in Line", "no dominant stat yet");
+  const statsBefore = { ...vb.me.stats };
   db.updatePlayer(b, { xp: 0 });
   clock.advance(30 * 60_000);
   game.tick(clock.now());
   vb = game.view(b);
   assert.ok(vb.me.level >= 2, `level ${vb.me.level}`);
-  assert.ok(vb.me.pendingPoints >= 1);
-  assert.equal(vb.me.title, "Person in Line", "no dominant stat yet");
-  game.levelUp(b, "CHARM");
+  assert.equal(vb.me.stats[lean as "CHARM" | "INTELLIGENCE"], statsBefore[lean as "CHARM" | "INTELLIGENCE"] + (vb.me.level - 1), "each level raised the most-used stat");
+  assert.ok(events.notices.some((n) => n.playerId === b && n.text.includes(`${lean} +1`)));
+  assert.notEqual(vb.me.title, "Person in Line");
+  // With no quests since the last level-up, the raise is random but still happens.
+  const total = () => vb.me.stats.CHARM + vb.me.stats.INTELLIGENCE + vb.me.stats.STRENGTH;
+  const before = total();
+  db.updatePlayer(b, { xp: content.xpCurve[vb.me.level] - 1 });
+  clock.advance(60_000);
+  game.tick(clock.now());
   vb = game.view(b);
-  assert.equal(vb.me.stats.CHARM, 2);
-  assert.equal(vb.me.title, "Local Sweetheart");
-  assert.equal(vb.me.accessory, "sunglasses");
+  assert.equal(total(), before + 1, "tie still raises exactly one stat");
   assert.equal(game.view(a).me.phase, "front", "a stayed at the front the whole time");
   assert.equal(events.finished.length, 0);
 });

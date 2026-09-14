@@ -126,6 +126,7 @@ class Bot {
   }
 
   onMessage(msg) {
+    if (msg.type === "notice") this.log(msg.text);
     if (msg.type === "view") this.onView(msg.view);
     else if (msg.type === "finished") this.onFinished(msg);
     else if (msg.type === "error") {
@@ -160,14 +161,6 @@ class Bot {
       });
     }
     if (me.questResult) this.later(1500, () => this.send({ type: "quest_dismiss" }));
-    if (me.pendingPoints > 0 && !this.spending) {
-      this.spending = true;
-      this.later(1000, () => {
-        this.spending = false;
-        this.log(`level ${me.level}: +1 ${this.stat}`);
-        this.send({ type: "levelup", stat: this.stat });
-      });
-    }
 
     if (me.phase === "front" && !this.frontHandled) {
       this.frontHandled = true;

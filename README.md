@@ -80,6 +80,10 @@ The roll formula is `p = ROLL_BASE + (stat - difficulty) * ROLL_STEP`, clamped t
 `ROLL_FLOOR..ROLL_CEILING`. Players only ever see the qualitative band from
 `Odds_Bands`.
 
+Stats grow on level-up automatically: each new level raises whichever stat the
+player chose most often in quests since their previous level-up. Ties, including
+"no quests answered", pick at random. There is no manual stat point.
+
 ## Layout
 
 ```

@@ -24,6 +24,7 @@ export interface PlayerRow {
   muted: number;
   created_at: number;
   last_seen: number;
+  last_levelup_at: number;
 }
 
 export interface MessageRow {
@@ -157,6 +158,14 @@ export class Db {
       );
       CREATE INDEX IF NOT EXISTS quest_log_player ON quest_log(player_id, at DESC);
     `);
+    // Additive migrations for databases created by earlier builds.
+    this.ensureColumn("players", "last_levelup_at", "INTEGER NOT NULL DEFAULT 0");
+    this.ensureColumn("quest_log", "stat", "TEXT NOT NULL DEFAULT ''");
+  }
+
+  private ensureColumn(table: string, column: string, ddl: string) {
+    const cols = this.sql.prepare(`PRAGMA table_info(${table})`).all() as unknown as { name: string }[];
+    if (!cols.some((c) => c.name === column)) this.sql.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
   }
 
   // ---- players -----------------------------------------------------------
@@ -371,6 +380,7 @@ export class Db {
     playerId: number;
     questId: string;
     option: string;
+    stat: string;
     success: boolean;
     probability: number;
     xp: number;
@@ -378,9 +388,19 @@ export class Db {
   }) {
     this.sql
       .prepare(
-        `INSERT INTO quest_log (player_id, quest_id, option, success, probability, xp, at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO quest_log (player_id, quest_id, option, stat, success, probability, xp, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       )
-      .run(q.playerId, q.questId, q.option, q.success ? 1 : 0, q.probability, q.xp, q.now);
+      .run(q.playerId, q.questId, q.option, q.stat, q.success ? 1 : 0, q.probability, q.xp, q.now);
+  }
+
+  /** How many times each stat was chosen in quests since `since` (ms). */
+  statUsageSince(playerId: number, since: number): Record<string, number> {
+    const rows = this.sql
+      .prepare("SELECT stat, COUNT(*) AS n FROM quest_log WHERE player_id = ? AND at > ? AND stat <> '' GROUP BY stat")
+      .all(playerId, since) as unknown as { stat: string; n: number }[];
+    const out: Record<string, number> = {};
+    for (const r of rows) out[r.stat] = r.n;
+    return out;
   }
 
   recentQuestIds(playerId: number, limit: number): string[] {

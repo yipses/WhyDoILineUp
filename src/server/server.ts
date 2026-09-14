@@ -60,6 +60,9 @@ export function createServer(game: Game) {
     onError(playerId, text) {
       sendTo(playerId, { type: "error", text });
     },
+    onNotice(playerId, text) {
+      sendTo(playerId, { type: "notice", text });
+    },
   });
 
   // ---- identity ----------------------------------------------------------
@@ -225,9 +228,6 @@ export function createServer(game: Game) {
       }
       case "quest_dismiss":
         game.dismissQuestResult(playerId);
-        break;
-      case "levelup":
-        game.levelUp(playerId, str("stat"));
         break;
       case "more_time":
         game.moreTime(playerId);

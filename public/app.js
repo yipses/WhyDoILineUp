@@ -27,6 +27,8 @@
     siteUrl: "",
     errorText: "",
     errorUntil: 0,
+    noticeText: "",
+    noticeUntil: 0,
     draftMessage: "",
     lastLineSig: "",
   };
@@ -182,6 +184,11 @@
         renderDialog();
         renderMenu();
         break;
+      case "notice":
+        S.noticeText = msg.text;
+        S.noticeUntil = Date.now() + 12000;
+        renderMenu();
+        break;
       case "leaderboard":
         S.leaderboard = msg;
         if (S.overlay && S.overlay.kind === "leaderboard") renderOverlay();
@@ -311,7 +318,6 @@
       items.push({ label: "LEADERBOARD", action: "leaderboard" });
       items.push({ label: "RECEIPTS", action: "receipts" });
       items.push({ label: "RANDOMIZE LOOK", action: "reroll" });
-      if (v.me.pendingPoints > 0) items.push({ label: `LEVEL UP (${v.me.pendingPoints} point${v.me.pendingPoints > 1 ? "s" : ""})`, action: "levelup", hot: true });
     } else if (v.me.phase === "inline") {
       if (v.me.quest) items.push({ label: `QUEST from ${v.me.quest.npcName}`, action: "quest", hot: true });
       items.push({ label: "STATUS", action: "status" });
@@ -319,7 +325,6 @@
       items.push({ label: "LEADERBOARD", action: "leaderboard" });
       items.push({ label: "RECEIPTS", action: "receipts" });
       items.push({ label: "RANDOMIZE LOOK", action: "reroll" });
-      if (v.me.pendingPoints > 0) items.push({ label: `LEVEL UP (${v.me.pendingPoints} point${v.me.pendingPoints > 1 ? "s" : ""})`, action: "levelup", hot: true });
       if (!v.me.muted) items.push({ label: "MUTE CHAT", action: "mute" });
       items.push({ label: "LEAVE THE LINE", action: "leave" });
     } else if (v.me.phase === "front") {
@@ -367,6 +372,7 @@
       html += `\n${xpBar(m)}`;
       html += `\n<span class="dim">CHA</span> ${m.stats.CHARM}  <span class="dim">INT</span> ${m.stats.INTELLIGENCE}  <span class="dim">STR</span> ${m.stats.STRENGTH}`;
     }
+    if (S.noticeText && Date.now() < S.noticeUntil) html += `\n<span class="ok">${esc(S.noticeText)}</span>`;
     if (S.errorText && Date.now() < S.errorUntil) html += `\n<span class="danger">${esc(S.errorText)}</span>`;
     el.menu.innerHTML = html;
   }
@@ -510,13 +516,6 @@ ${S.errorText && Date.now() < S.errorUntil ? `<pre class="danger">${esc(S.errorT
     switch (o.kind) {
       case "status":
         return [{ label: "BACK", action: "close" }];
-      case "levelup":
-        return [
-          { label: "CHARM +1", action: "levelup_stat", stat: "CHARM" },
-          { label: "INTELLIGENCE +1", action: "levelup_stat", stat: "INTELLIGENCE" },
-          { label: "STRENGTH +1", action: "levelup_stat", stat: "STRENGTH" },
-          { label: "LATER", action: "close" },
-        ];
       case "leaderboard":
         return [
           { label: S.leaderboardTab === "weekly" ? "[x] WEEKLY" : "[ ] WEEKLY", action: "lb_weekly" },
@@ -578,13 +577,9 @@ CHARM         ${statBar(m.stats.CHARM, cap)} ${m.stats.CHARM}
 INTELLIGENCE  ${statBar(m.stats.INTELLIGENCE, cap)} ${m.stats.INTELLIGENCE}
 STRENGTH      ${statBar(m.stats.STRENGTH, cap)} ${m.stats.STRENGTH}
 
-TIME IN LINE  ${fmtDuration(m.lifetimeSeconds)} lifetime${m.pendingPoints > 0 ? `\n\n<span class="k">You have ${m.pendingPoints} stat point${m.pendingPoints > 1 ? "s" : ""} to spend.</span>` : ""}</pre>${menu}`,
-      );
-    } else if (o.kind === "levelup") {
-      const m = v.me;
-      html = box(
-        "LEVEL UP",
-        `<pre class="wrap">LVL ${m.level}. Pick one stat to raise. This is the only way stats change.\n\nCHARM ${m.stats.CHARM}  ·  INTELLIGENCE ${m.stats.INTELLIGENCE}  ·  STRENGTH ${m.stats.STRENGTH}\n<span class="dim">Points to spend: ${m.pendingPoints}</span></pre>${menu}`,
+TIME IN LINE  ${fmtDuration(m.lifetimeSeconds)} lifetime
+
+<span class="dim">Each level raises the stat you leaned on most in quests since the last one.</span></pre>${menu}`,
       );
     } else if (o.kind === "leaderboard") {
       let body = `<pre class="dim">loading...</pre>`;
@@ -657,13 +652,6 @@ TIME IN LINE  ${fmtDuration(m.lifetimeSeconds)} lifetime${m.pendingPoints > 0 ? 
         break;
       case "reroll":
         send({ type: "reroll" });
-        break;
-      case "levelup":
-        openOverlay("levelup");
-        break;
-      case "levelup_stat":
-        send({ type: "levelup", stat: item.stat });
-        if (v.me.pendingPoints <= 1) closeOverlay();
         break;
       case "say":
         el.chatfield.focus();
@@ -876,6 +864,10 @@ TIME IN LINE  ${fmtDuration(m.lifetimeSeconds)} lifetime${m.pendingPoints > 0 ? 
     if (S.toast && Date.now() >= S.toastUntil) renderToast();
     if (S.errorText && Date.now() >= S.errorUntil) {
       S.errorText = "";
+      renderMenu();
+    }
+    if (S.noticeText && Date.now() >= S.noticeUntil) {
+      S.noticeText = "";
       renderMenu();
     }
   }, 500);
