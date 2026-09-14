@@ -84,6 +84,12 @@ Stats grow on level-up automatically: each new level raises whichever stat the
 player chose most often in quests since their previous level-up. Ties, including
 "no quests answered", pick at random. There is no manual stat point.
 
+## Docs
+
+- `docs/design-doc.md` is the spec this was built from.
+- `docs/DECISIONS.md` lists every place the build departs from the spec, and why.
+- `CLAUDE.md` is the orientation file for anyone (or any assistant) picking the project up.
+
 ## Layout
 
 ```
