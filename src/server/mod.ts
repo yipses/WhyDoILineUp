@@ -16,7 +16,7 @@ export function renderModPage(game: Game): string {
   <td>${m.mod_score === null ? "-" : m.mod_score.toFixed(2)}</td>
   <td>${esc(m.mod_reason)}</td>
   <td>${m.reports}</td>
-  <td class="t">${esc(m.text)}</td>
+  <td class="t">${m.prompt ? `<span class="muted">${esc(m.prompt)}</span>\n` : ""}${esc(m.text)}</td>
   <td>
     <form method="post" action="/mod/approve" style="display:inline"><input type="hidden" name="id" value="${m.id}"><button>approve</button></form>
     <form method="post" action="/mod/reject" style="display:inline"><input type="hidden" name="id" value="${m.id}"><button>reject</button></form>

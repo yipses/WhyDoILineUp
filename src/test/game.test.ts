@@ -155,6 +155,11 @@ test("join, front, submit, emoji, receipt", async () => {
   game.tick(clock.now());
   const front = game.view(a).me.front!;
   assert.notEqual(front.messageText, "Bring a snack. Trust me.");
+  // Player-written messages carry the prompt their author was shown; seeds do not.
+  const jun = db.recentMessages(5).find((m) => m.text === "Jun was here.")!;
+  assert.ok(jun.prompt.length > 0, "prompt stored with the message");
+  if (front.messageText === "Jun was here.") assert.equal(front.messagePrompt, jun.prompt);
+  else assert.equal(front.messagePrompt, null, "seeds have no prompt");
 });
 
 test("front timeout removes the player without a message", async () => {

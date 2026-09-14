@@ -424,9 +424,14 @@
     if (v.me.phase === "front" && v.me.front) {
       const f = v.me.front;
       const left = fmtCountdown(f.deadline - now());
-      const msg = f.messageText
-        ? `<pre class="wrap">Someone who stood here before you left this:\n\n  <span class="name">"${esc(f.messageText)}"</span></pre>`
-        : `<pre class="wrap">Nobody left anything for you. That happens.</pre>`;
+      let msg;
+      if (!f.messageText) {
+        msg = `<pre class="wrap">Nobody left anything for you. That happens.</pre>`;
+      } else if (f.messagePrompt) {
+        msg = `<pre class="wrap">Someone who stood here before you was asked:\n  <span class="dim">${esc(f.messagePrompt)}</span>\n\nThey wrote:\n  <span class="name">"${esc(f.messageText)}"</span></pre>`;
+      } else {
+        msg = `<pre class="wrap">Someone who stood here before you left this:\n\n  <span class="name">"${esc(f.messageText)}"</span></pre>`;
+      }
       const hurrah = f.bonusXp > 0 ? `<pre class="ok">You made it. +${f.bonusXp} XP.\n</pre>` : "";
       html = box(
         `YOU'RE AT THE FRONT  ·  ${left}`,

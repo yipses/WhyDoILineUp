@@ -38,6 +38,7 @@ export interface MessageRow {
   deliveries: number;
   reports: number;
   created_at: number;
+  prompt: string;
 }
 
 export interface ReceiptRow {
@@ -161,6 +162,7 @@ export class Db {
     // Additive migrations for databases created by earlier builds.
     this.ensureColumn("players", "last_levelup_at", "INTEGER NOT NULL DEFAULT 0");
     this.ensureColumn("quest_log", "stat", "TEXT NOT NULL DEFAULT ''");
+    this.ensureColumn("messages", "prompt", "TEXT NOT NULL DEFAULT ''");
   }
 
   private ensureColumn(table: string, column: string, ddl: string) {
@@ -250,13 +252,15 @@ export class Db {
     modScore: number | null;
     modReason: string;
     now: number;
+    /** The prompt shown to the writer, if any. Seeds have none. */
+    prompt?: string;
   }): number {
     const res = this.sql
       .prepare(
-        `INSERT INTO messages (text, author_id, status, is_seed, mod_score, mod_reason, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO messages (text, author_id, status, is_seed, mod_score, mod_reason, created_at, prompt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       )
-      .run(m.text, m.authorId, m.status, m.isSeed ? 1 : 0, m.modScore, m.modReason, m.now);
+      .run(m.text, m.authorId, m.status, m.isSeed ? 1 : 0, m.modScore, m.modReason, m.now, m.prompt ?? "");
     return Number(res.lastInsertRowid);
   }
 

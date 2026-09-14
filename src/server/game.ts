@@ -103,6 +103,8 @@ export interface MeView {
     deadline: number;
     extensionsLeft: number;
     messageText: string | null;
+    /** The prompt the previous writer was answering, if any. */
+    messagePrompt: string | null;
     prompt: string;
     maxChars: number;
     reported: boolean;
@@ -172,6 +174,7 @@ interface FrontState {
   extensions: number;
   messageId: number | null;
   messageText: string | null;
+  messagePrompt: string | null;
   prompt: string;
   receiptId: number;
   reported: boolean;
@@ -381,6 +384,7 @@ export class Game {
             deadline: entry.front.deadline,
             extensionsLeft: this.tuning.num("FRONT_EXTENSIONS_MAX", 2) - entry.front.extensions,
             messageText: entry.front.messageText,
+            messagePrompt: entry.front.messagePrompt,
             prompt: entry.front.prompt,
             maxChars: this.tuning.num("MESSAGE_MAX_CHARS", 140),
             reported: entry.front.reported,
@@ -508,6 +512,7 @@ export class Game {
       extensions: 0,
       messageId: msg?.id ?? null,
       messageText: msg?.text ?? null,
+      messagePrompt: msg?.prompt || null,
       prompt,
       receiptId,
       reported: false,
@@ -517,7 +522,7 @@ export class Game {
     this.listener?.onPlayer(p.id);
   }
 
-  private drawMessage(playerId: number, now: number): { id: number; text: string } | null {
+  private drawMessage(playerId: number, now: number): { id: number; text: string; prompt: string } | null {
     const retire = this.tuning.num("SEED_RETIRE_THRESHOLD", 200);
     const weightExp = this.tuning.num("MESSAGE_DELIVERY_WEIGHT", 1);
     let pool = this.db.approvedMessages(playerId, this.db.approvedNonSeedCount() <= retire);
@@ -535,7 +540,7 @@ export class Game {
       }
     }
     this.db.recordDelivery(pick.id, playerId, now);
-    return { id: pick.id, text: pick.text };
+    return { id: pick.id, text: pick.text, prompt: pick.prompt ?? "" };
   }
 
   moreTime(playerId: number) {
@@ -582,7 +587,16 @@ export class Game {
     this.listener?.onPlayer(playerId);
 
     // Moderation is asynchronous; the message is not eligible until it passes.
-    const id = this.db.insertMessage({ text, authorId: playerId, status: "pending", isSeed: false, modScore: null, modReason: "", now });
+    const id = this.db.insertMessage({
+      text,
+      authorId: playerId,
+      status: "pending",
+      isSeed: false,
+      modScore: null,
+      modReason: "",
+      now,
+      prompt: front.prompt,
+    });
     void this.moderateMessage(id, text);
   }
 
