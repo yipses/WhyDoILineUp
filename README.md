@@ -33,11 +33,28 @@ to be a second person in line.
 | `MOD_MODEL`         | `claude-opus-5`        | Model used by the AI classifier. |
 | `SITE_URL`          | request origin         | Public URL placed in share text. |
 
+### Bots
+
+To playtest with a real line, start the server, then in a second terminal:
+
+```sh
+npm run bots              # 8 bots join, wait, chat, do quests, leave messages, rejoin
+BOTS=20 npm run bots      # a longer line
+REJOIN=0 npm run bots     # each bot leaves for good after its turn at the front
+```
+
+Bots follow the server's `TIME_SCALE`, so with `TIME_SCALE=20` on the server
+the line cycles in seconds. Other knobs (`FRONT_FRACTION`, `CHAT_EVERY`,
+`LEAVE_CHANCE`, `STAGGER_MS`, `BASE_URL`) are documented at the top of
+`scripts/bots.mjs`. Ctrl+C removes them; the server drops them after the
+grace period.
+
 ### Scripts
 
 ```sh
 npm test            # engine tests with a fake clock (node --test)
-npm run smoke       # bots against a running server; use TIME_SCALE=20 on the server
+npm run bots        # playtest bots (see above)
+npm run smoke       # short automated bot run that asserts the loop works; use TIME_SCALE=20 on the server
 npm run content:pull   # pull every tab of the Google Sheet into content/*.csv
 npm run content:build  # regenerate content/*.csv from scripts/build_content.py (initial authoring only)
 ```

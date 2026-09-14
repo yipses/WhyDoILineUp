@@ -14,7 +14,8 @@
     "content:pull": "node scripts/pull-content.mjs",
     "content:build": "python3 scripts/build_content.py --no-xlsx",
     "test": "npm run build && node --no-warnings=ExperimentalWarning --test dist/test/",
-    "smoke": "node --no-warnings=ExperimentalWarning scripts/smoke.mjs"
+    "smoke": "node --no-warnings=ExperimentalWarning scripts/smoke.mjs",
+    "bots": "node --no-warnings=ExperimentalWarning scripts/bots.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",
