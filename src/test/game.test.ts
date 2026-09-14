@@ -159,7 +159,7 @@ test("join, front, submit, emoji, receipt", async () => {
   const jun = db.recentMessages(5).find((m) => m.text === "Jun was here.")!;
   assert.ok(jun.prompt.length > 0, "prompt stored with the message");
   if (front.messageText === "Jun was here.") assert.equal(front.messagePrompt, jun.prompt);
-  else assert.equal(front.messagePrompt, null, "seeds have no prompt");
+  else assert.ok(front.messagePrompt, "seeds carry a prompt too");
 });
 
 test("front timeout removes the player without a message", async () => {

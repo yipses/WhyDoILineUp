@@ -255,12 +255,30 @@ export class Game {
   // -------------------------------------------------------------------------
 
   private seedMessages() {
-    if (this.db.seedCount() > 0) return;
     const now = this.now();
-    for (const text of this.content.seedMessages) {
-      this.db.insertMessage({ text, authorId: null, status: "approved", isSeed: true, modScore: 1, modReason: "seed", now });
+    if (this.db.seedCount() === 0) {
+      for (const seed of this.content.seedMessages) {
+        this.db.insertMessage({
+          text: seed.text,
+          authorId: null,
+          status: "approved",
+          isSeed: true,
+          modScore: 1,
+          modReason: "seed",
+          now,
+          prompt: seed.prompt,
+        });
+      }
+      console.log(`[game] seeded ${this.content.seedMessages.length} messages`);
+      return;
     }
-    console.log(`[game] seeded ${this.content.seedMessages.length} messages`);
+    // Seeds inserted by earlier builds had no prompt; fill them in by text.
+    const fill = this.db.sql.prepare("UPDATE messages SET prompt = ? WHERE is_seed = 1 AND prompt = '' AND text = ?");
+    let filled = 0;
+    for (const seed of this.content.seedMessages) {
+      if (seed.prompt) filled += Number(fill.run(seed.prompt, seed.text).changes);
+    }
+    if (filled) console.log(`[game] backfilled prompts on ${filled} seed messages`);
   }
 
   // -------------------------------------------------------------------------

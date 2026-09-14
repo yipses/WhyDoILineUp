@@ -63,7 +63,7 @@ export interface Content {
   npcLines: { npcId: string; text: string }[];
   announcements: { npcId: string; event: string; text: string }[];
   prompts: string[];
-  seedMessages: string[];
+  seedMessages: { text: string; prompt: string }[];
   blocklist: string[];
   quests: Quest[];
 }
@@ -203,7 +203,9 @@ export function loadContent(): Content {
   const npcLines = readTable("NPC_Lines").map((r) => ({ npcId: r.npc_id, text: r.text }));
   const announcements = readTable("Announcements").map((r) => ({ npcId: r.npc_id, event: r.event, text: r.text }));
   const prompts = readTable("Prompts").map((r) => r.text).filter(Boolean);
-  const seedMessages = readTable("Seed_Messages").map((r) => r.text).filter(Boolean);
+  const seedMessages = readTable("Seed_Messages")
+    .filter((r) => r.text)
+    .map((r) => ({ text: r.text, prompt: r.prompt ?? "" }));
   const blocklist = readTable("Blocklist").map((r) => r.word.toLowerCase()).filter(Boolean);
 
   const quests: Quest[] = readTable("Quests").map((r) => ({
