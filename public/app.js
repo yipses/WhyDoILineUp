@@ -132,6 +132,8 @@
         if (prevPhase !== S.view.me.phase) {
           S.dialogIndex = 0;
           S.menuIndex = 0;
+          // A new turn at the front starts with an empty message box.
+          if (S.view.me.phase === "front" || prevPhase === "front") S.draftMessage = "";
           if (S.view.me.phase === "front" || S.view.me.phase === "exiting") S.focus = "dialog";
           else if (S.focus === "dialog") S.focus = "menu";
         }
@@ -437,7 +439,7 @@ ${S.errorText && Date.now() < S.errorUntil ? `<pre class="danger">${esc(S.errorT
 
     // Preserve the draft message across re-renders.
     const prev = document.getElementById("msgfield");
-    if (prev) S.draftMessage = prev.value;
+    if (prev && v.me.phase === "front") S.draftMessage = prev.value;
     el.dialog.innerHTML = html;
     const field = document.getElementById("msgfield");
     if (field) {
