@@ -460,6 +460,8 @@ export class Game {
       if (receipt) this.listener?.onFinished(playerId, { receipt, timedOut: reason === "timeout" });
       if (p && reason === "timeout") this.listener?.onToast(`${p.name} ran out of time at the door and wandered off.`);
     }
+    // The player's own phase changed; make sure their client hears about it.
+    if (reason === "timeout" || reason === "grace") this.listener?.onPlayer(playerId);
     return true;
   }
 

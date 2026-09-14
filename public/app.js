@@ -160,7 +160,17 @@
         renderToast();
         break;
       case "finished":
-        S.finished = { receipt: msg.receipt, timedOut: msg.timedOut };
+        if (msg.timedOut) {
+          // Ran out of time at the door: no message, no share screen. Back to the street.
+          S.finished = null;
+          S.overlay = null;
+          S.focus = "menu";
+          S.errorText = "Time ran out at the door. No message left. You can rejoin at the back.";
+          S.errorUntil = Date.now() + 10000;
+          renderAll();
+          break;
+        }
+        S.finished = { receipt: msg.receipt, timedOut: false };
         S.overlay = { kind: "finished" };
         S.overlayIndex = 0;
         S.focus = "overlay";
@@ -579,7 +589,7 @@ TIME IN LINE  ${fmtDuration(m.lifetimeSeconds)} lifetime${m.pendingPoints > 0 ? 
       html = box("RECEIPTS", body + menu);
     } else if (o.kind === "receipt" || o.kind === "finished") {
       const r = o.kind === "finished" ? S.finished.receipt : S.receipts[o.index];
-      const note = o.kind === "finished" ? (S.finished.timedOut ? `<pre class="danger">Time ran out. No message left. You can rejoin at the back.\n</pre>` : `<pre class="dim">That's it. That's the whole thing.\n</pre>`) : "";
+      const note = o.kind === "finished" ? `<pre class="dim">That's it. That's the whole thing.\n</pre>` : "";
       html = box(o.kind === "finished" ? "YOU DID IT" : "RECEIPT", `${note}<pre class="receipt">${esc(r.text)}</pre>${menu}`);
     } else if (o.kind === "peek") {
       html = "";
