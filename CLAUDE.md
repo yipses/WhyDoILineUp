@@ -1,8 +1,8 @@
 # THE LINE
 
-Read first: `README.md` (how to run), `docs/design-doc.md` (the spec),
-`docs/DECISIONS.md` (where the build deviates from the spec and why).
-Keep `docs/DECISIONS.md` current whenever a rule changes.
+Read first: `README.md` (how to run) and `docs/design-doc.md` (the spec,
+kept in step with the build). When a rule changes, change the design doc
+in the same commit. It describes the game as it is, not as it was.
 
 ## Commands
 

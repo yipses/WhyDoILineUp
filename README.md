@@ -86,8 +86,7 @@ player chose most often in quests since their previous level-up. Ties, including
 
 ## Docs
 
-- `docs/design-doc.md` is the spec this was built from.
-- `docs/DECISIONS.md` lists every place the build departs from the spec, and why.
+- `docs/design-doc.md` is the spec, kept in step with the build. If the code and the doc disagree, one of them is wrong; fix it.
 - `CLAUDE.md` is the orientation file for anyone (or any assistant) picking the project up.
 
 ## Layout
